@@ -1,7 +1,5 @@
 #!/usr/local/env bash
 
-# TODO: Turn this into Ansible
-
 sudo pacman -Syu --noconfirm
 
 yay --noconfirm --answerdiff None --answerclean None --mflags "--noconfirm" -Syu

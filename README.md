@@ -13,3 +13,4 @@ When complete, this repo will generate a complete setup for a user to browse the
 6. Ardour for music making, Inkscape for digital art, Blender for 3-D art, animation and design
 7. Steam setup with NVIDIA (TODO testing)
 8. ZSH and add-ons
+9. Wake-On-LAN for remote things
