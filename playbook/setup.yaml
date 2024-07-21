@@ -1,0 +1,185 @@
+---
+- name: Full system setup and configuration
+  hosts: all
+  become: yes
+
+  vars:
+    fedora_packages:
+      - lshw
+      - nvme-cli
+      - smartmontools
+      - flatpak
+      - vulkan-tools
+      - python3-pip
+      - rustup
+    debian_packages:
+      - lshw
+      - nvme-cli
+      - smartmontools
+      - flatpak
+      - vulkan-tools
+      - python3-pip
+      - rustup
+    endeavoros_packages:
+      - lshw
+      - nvme-cli
+      - smartmontools
+      - flatpak
+      - vulkan-tools
+      - python-pip
+      - rustup
+
+  tasks:
+    - name: Determine the OS
+      shell: cat /etc/os-release | grep "^ID="
+      register: os_id
+      changed_when: false
+
+    - name: Set package list based on OS
+      set_fact:
+        packages: "{{ fedora_packages }}" 
+      when: os_id.stdout.find('fedora') != -1
+
+    - name: Set package list based on OS
+      set_fact:
+        packages: "{{ debian_packages }}"
+      when: os_id.stdout.find('debian') != -1
+
+    - name: Set package list based on OS
+      set_fact:
+        packages: "{{ endeavoros_packages }}"
+      when: os_id.stdout.find('endeavouros') != -1
+
+    - name: Update all packages and firmware on Debian
+      apt: 
+        update_cache: yes
+        upgrade: dist
+      when: os_id.stdout.find('debian') != -1
+
+    - name: Update all packages and firmware on Fedora
+      dnf:
+        name: '*'
+        state: latest
+      when: os_id.stdout.find('fedora') != -1
+
+    - name: Update all packages and firmware on EndeavourOS
+      pacman:
+        update_cache: yes
+        upgrade: yes
+      when: os_id.stdout.find('endeavouros') != -1
+
+    - name: Install necessary packages
+      package:
+        name: "{{ packages }}"
+        state: present
+
+    - name: Detect GPU type
+      shell: lshw -C display | grep vendor | awk '{print $2}'
+      register: gpu_vendor
+
+    - name: Install NVIDIA drivers on Debian
+      apt:
+        name: "{{ item }}"
+        state: present
+      loop:
+        - nvidia-driver
+        - nvidia-settings
+        - vulkan-utils
+      when: gpu_vendor.stdout.find('NVIDIA') != -1 and os_id.stdout.find('debian') != -1
+
+    - name: Install NVIDIA drivers on Fedora
+      dnf:
+        name: "{{ item }}"
+        state: present
+      loop:
+        - xorg-x11-drv-nvidia
+        - xorg-x11-drv-nvidia-libs
+        - vulkan
+      when: gpu_vendor.stdout.find('NVIDIA') != -1 and os_id.stdout.find('fedora') != -1
+
+    - name: Install NVIDIA drivers on EndeavourOS
+      pacman:
+        name: "{{ item }}"
+        state: present
+      loop:
+        - nvidia
+        - nvidia-utils
+        - vulkan-icd-loader
+      when: gpu_vendor.stdout.find('NVIDIA') != -1 and os_id.stdout.find('endeavouros') != -1
+
+    - name: Install AMD drivers on Debian
+      apt:
+        name: "{{ item }}"
+        state: present
+      loop:
+        - mesa-vulkan-drivers
+        - vulkan-utils
+      when: gpu_vendor.stdout.find('AMD') != -1 and os_id.stdout.find('debian') != -1
+
+    - name: Install AMD drivers on Fedora
+      dnf:
+        name: "{{ item }}"
+        state: present
+      loop:
+        - xorg-x11-drv-amdgpu
+        - vulkan
+      when: gpu_vendor.stdout.find('AMD') != -1 and os_id.stdout.find('fedora') != -1
+
+    - name: Install AMD drivers on EndeavourOS
+      pacman:
+        name: "{{ item }}"
+        state: present
+      loop:
+        - xf86-video-amdgpu
+        - vulkan-radeon
+      when: gpu_vendor.stdout.find('AMD') != -1 and os_id.stdout.find('endeavouros') != -1
+
+    - name: Install and configure Flatpak
+      package:
+        name: flatpak
+        state: present
+      when: os_id.stdout.find('fedora') != -1 or os_id.stdout.find('debian') != -1 or os_id.stdout.find('endeavouros') != -1
+
+    - name: Add Flathub repository
+      command: flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+
+    - name: Install Molecule
+      pip:
+        name: molecule
+
+    - name: Remove native versions of applications
+      package:
+        name: "{{ item }}"
+        state: absent
+      loop:
+        - thunderbird
+        - onlyoffice
+        - calibre
+        - standardnotes
+        - ardour
+
+    - name: Install applications as Flatpaks
+      flatpak:
+        name: "{{ item }}"
+        state: present
+        remote: flathub
+      loop:
+        - org.mozilla.Thunderbird
+        - org.onlyoffice.desktopeditors
+        - com.calibre_ebook.calibre
+        - org.standardnotes.standardnotes
+        - org.ardour.Ardour
+
+    - name: Install rustup
+      shell: curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+      args:
+        creates: /usr/local/bin/rustup
+
+    - name: Test Vulkan installation
+      shell: vulkaninfo
+      register: vulkan_test
+      ignore_errors: yes
+
+    - name: Print Vulkan test results
+      debug:
+        msg: "{{ vulkan_test.stdout }}"

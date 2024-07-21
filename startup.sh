@@ -4,13 +4,13 @@
 
 sudo pacman -Syu --noconfirm
 
-LANG=C yay --noprovides --answerdiff None --answerclean None --mflags "--noconfirm" -Syu
+yay --noconfirm --answerdiff None --answerclean None --mflags "--noconfirm" -Syu
 
-# If macbook pro 2013, if not comment out the following file
-LANG=C yay --noprovides --answerdiff None --answerclean None --mflags "--noconfirm" -S nvidia-470xx-dkms nvidia-470xx-utils lib32-nvidia-470xx-utils opencl-nvidia-470x
+# If macbook pro 2013, if not comment out the following 
+# yay  --answerdiff None --answerclean None --mflags "--noconfirm" -S nvidia-470xx-dkms nvidia-470xx-utils lib32-nvidia-470xx-utils opencl-nvidia-470x
 
 #If not
-# sudo pacman -S nvidia nvidia-utils lib32-nvidia-utils
+sudo pacman -S nvidia nvidia-utils lib32-nvidia-utils
 
 # TODO: Firefox add-ons automation if possible
 
@@ -18,7 +18,7 @@ LANG=C yay --noprovides --answerdiff None --answerclean None --mflags "--noconfi
 sudo pacman -S --noconfirm thunderbird calibre ardour inkscape blender
 
 # OnlyOffice
-LANG=C yay --noprovides --answerdiff None --answerclean None --mflags "--noconfirm" -S onlyoffice-bin
+yay  --noconfirm --answerdiff None --answerclean None --mflags "--noconfirm" -S onlyoffice-bin
 
 # Debugging tools and Steam
 sudo pamcan -S --noconfirm vulkaninfo nvidia-settings steam
@@ -29,5 +29,5 @@ read -p "Can reboot here to test if Steam games will work.  If you want to conti
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 
 sudo pacman -S --noconfirm nerd-fonts starship
-LANG=C yay --noprovides --answerdiff None --answerclean None --mflags "--noconfirm" -S wezterm vscodium zed-preview-editor
+yay --noconfirm --answerdiff None --answerclean None --mflags "--noconfirm" -S wezterm vscodium zed-preview-editor
 
