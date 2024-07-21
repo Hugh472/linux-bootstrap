@@ -46,6 +46,7 @@
       - git
       - ethtool
       - hdparm
+    display_manager: gdm3  # You can change this to your preferred display manager
 
   tasks:
     - name: Determine the OS
@@ -311,3 +312,52 @@
           sudo cryptsetup luksHeaderBackup /dev/sdX --header-backup-file /etc/cryptsetup-headers/$(hostname)-$(date +%F).header
         fi
       when: luks_check.stdout is defined and luks_check.stdout != ""
+
+    - name: Install Wayland and XWayland
+      package:
+        name:
+          - wayland
+          - xwayland
+        state: present
+
+    - name: Install GNOME packages for Wayland
+      package:
+        name: gnome-session-wayland
+        state: present
+      when: "'gnome-session' in ansible_facts.packages"
+
+    - name: Install KDE Plasma Wayland session support
+      package:
+        name:
+          - plasma-workspace-wayland
+          - kwin-wayland
+        state: present
+      when: "'plasma-desktop' in ansible_facts.packages"
+
+    - name: Install display manager
+      package:
+        name: "{{ display_manager }}"
+        state: present
+
+    - name: Set default display manager
+      command: dpkg-reconfigure -f noninteractive {{ display_manager }}
+      when: ansible_distribution in ['Debian', 'Ubuntu']
+
+    - name: Enable display manager service
+      systemd:
+        name: "{{ display_manager }}"
+        state: started
+        enabled: yes
+
+    - name: Reboot the system to apply changes
+      reboot:
+        msg: "Reboot initiated by Ansible for Wayland setup"
+        pre_reboot_delay: 5
+
+    - name: Post-reboot tasks to select Wayland session
+      hosts: localhost
+      become: yes
+      tasks:
+        - name: Display message to select Wayland session
+          debug:
+            msg: "Please select the Wayland session at the login screen after reboot."
