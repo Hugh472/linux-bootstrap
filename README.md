@@ -14,3 +14,4 @@ When complete, this repo will generate a complete setup for a user to browse the
 7. Steam setup with NVIDIA (TODO testing)
 8. ZSH and add-ons
 9. Wake-On-LAN for remote things
+10. Wayland enablement
