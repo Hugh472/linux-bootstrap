@@ -1,0 +1,95 @@
+---
+- name: Install Docker
+  block:
+    - name: Install Docker dependencies
+      package:
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - software-properties-common
+        state: present
+      when: ansible_os_family == 'Debian'
+
+    - name: Add Docker GPG key
+      command: curl -fsSL https://download.docker.com/linux/{{ ansible_distribution | lower }}/gpg | sudo apt-key add -
+      when: ansible_os_family == 'Debian'
+
+    - name: Add Docker repository
+      command: add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/{{ ansible_distribution | lower }} $(lsb_release -cs) stable"
+      when: ansible_os_family == 'Debian'
+
+    - name: Update package index
+      apt:
+        update_cache: yes
+      when: ansible_os_family == 'Debian'
+
+    - name: Install Docker CE
+      package:
+        name: docker-ce
+        state: present
+      when: ansible_os_family == 'Debian'
+
+    - name: Install Docker on Fedora
+      package:
+        name: docker
+        state: present
+      when: ansible_os_family == 'RedHat'
+
+    - name: Start and enable Docker service
+      systemd:
+        name: docker
+        state: started
+        enabled: yes
+
+- name: Install kubectl
+  block:
+    - name: Download kubectl
+      get_url:
+        url: https://dl.k8s.io/release/v1.21.0/bin/linux/amd64/kubectl
+        dest: /usr/local/bin/kubectl
+        mode: '0755'
+
+- name: Install k9s
+  block:
+    - name: Download k9s
+      get_url:
+        url: https://github.com/derailed/k9s/releases/download/v0.24.10/k9s_Linux_amd64.tar.gz
+        dest: /tmp/k9s_Linux_amd64.tar.gz
+
+    - name: Extract k9s
+      unarchive:
+        src: /tmp/k9s_Linux_amd64.tar.gz
+        dest: /usr/local/bin/
+        remote_src: yes
+
+    - name: Set permissions for k9s
+      file:
+        path: /usr/local/bin/k9s
+        mode: '0755'
+
+- name: Install k3s
+  block:
+    - name: Install k3s
+      shell: curl -sfL https://get.k3s.io | sh -
+
+- name: Install Helm
+  block:
+    - name: Download Helm
+      get_url:
+        url: https://get.helm.sh/helm-v3.6.3-linux-amd64.tar.gz
+        dest: /tmp/helm-v3.6.3-linux-amd64.tar.gz
+
+    - name: Extract Helm
+      unarchive:
+        src: /tmp/helm-v3.6.3-linux-amd64.tar.gz
+        dest: /tmp/
+        remote_src: yes
+
+    - name: Move Helm binary
+      command: mv /tmp/linux-amd64/helm /usr/local/bin/helm
+
+    - name: Set permissions for Helm
+      file:
+        path: /usr/local/bin/helm
+        mode: '0755'

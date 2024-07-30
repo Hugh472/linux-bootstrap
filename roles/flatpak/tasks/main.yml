@@ -1,0 +1,42 @@
+---
+- name: Install and configure Flatpak
+  package:
+    name: flatpak
+    state: present
+  when: os_id.stdout.find('fedora') != -1 or os_id.stdout.find('debian') != -1 or os_id.stdout.find('endeavouros') != -1
+
+- name: Add Flathub repository
+  command: flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+
+- name: Remove native versions of applications
+  package:
+    name: "{{ item }}"
+    state: absent
+  loop:
+    - thunderbird
+    - onlyoffice
+    - calibre
+    - standardnotes
+    - ardour
+    - firefox
+
+- name: Install applications as Flatpaks
+  flatpak:
+    name: "{{ item }}"
+    state: present
+    remote: flathub
+  loop:
+    - org.mozilla.Thunderbird
+    - org.onlyoffice.desktopeditors
+    - com.calibre_ebook.calibre
+    - org.standardnotes.standardnotes
+    - org.ardour.Ardour
+    - org.mozilla.firefox
+
+- name: Install Calibre DeDRM_tools plugin
+  shell: |
+    mkdir -p ~/.config/calibre/plugins
+    wget https://github.com/noDRM/DeDRM_tools/releases/download/v7.2.1/DeDRM_plugin.zip -O ~/.config/calibre/plugins/DeDRM_plugin.zip
+    calibre-customize -b ~/.config/calibre/plugins/DeDRM_plugin.zip
+  args:
+    creates: ~/.config/calibre/plugins/DeDRM_plugin.zip

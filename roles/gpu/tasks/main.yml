@@ -1,0 +1,70 @@
+---
+- name: Detect GPU type
+  shell: lshw -C display | grep vendor | awk '{print $2}'
+  register: gpu_vendor
+
+- name: Install NVIDIA drivers on Debian
+  apt:
+    name: "{{ item }}"
+    state: present
+  loop:
+    - nvidia-driver
+    - nvidia-settings
+    - vulkan-utils
+  when: gpu_vendor.stdout.find('NVIDIA') != -1 and os_id.stdout.find('debian') != -1
+
+- name: Install NVIDIA drivers on Fedora
+  dnf:
+    name: "{{ item }}"
+    state: present
+  loop:
+    - xorg-x11-drv-nvidia
+    - xorg-x11-drv-nvidia-libs
+    - vulkan
+  when: gpu_vendor.stdout.find('NVIDIA') != -1 and os_id.stdout.find('fedora') != -1
+
+- name: Install NVIDIA drivers on EndeavourOS
+  pacman:
+    name: "{{ item }}"
+    state: present
+  loop:
+    - nvidia
+    - nvidia-utils
+    - vulkan-icd-loader
+  when: gpu_vendor.stdout.find('NVIDIA') != -1 and os_id.stdout.find('endeavouros') != -1
+
+- name: Install AMD drivers on Debian
+  apt:
+    name: "{{ item }}"
+    state: present
+  loop:
+    - mesa-vulkan-drivers
+    - vulkan-utils
+  when: gpu_vendor.stdout.find('AMD') != -1 and os_id.stdout.find('debian') != -1
+
+- name: Install AMD drivers on Fedora
+  dnf:
+    name: "{{ item }}"
+    state: present
+  loop:
+    - xorg-x11-drv-amdgpu
+    - vulkan
+  when: gpu_vendor.stdout.find('AMD') != -1 and os_id.stdout.find('fedora') != -1
+
+- name: Install AMD drivers on EndeavourOS
+  pacman:
+    name: "{{ item }}"
+    state: present
+  loop:
+    - xf86-video-amdgpu
+    - vulkan-radeon
+  when: gpu_vendor.stdout.find('AMD') != -1 and os_id.stdout.find('endeavouros') != -1
+
+- name: Test Vulkan installation
+  shell: vulkaninfo
+  register: vulkan_test
+  ignore_errors: yes
+
+- name: Print Vulkan test results
+  debug:
+    msg: "{{ vulkan_test.stdout }}"

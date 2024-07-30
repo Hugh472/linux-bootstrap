@@ -1,0 +1,13 @@
+---
+- name: Enable Hyprland
+  shell: |
+    if [[ "{{ os_id.stdout }}" == *"debian"* ]]; then
+      sudo apt install -y hyprland
+    elif [[ "{{ os_id.stdout }}" == *"fedora"* ]]; then
+      sudo dnf copr enable alebastr/hyprland -y
+      sudo dnf install -y hyprland
+    elif [[ "{{ os_id.stdout }}" == *"endeavouros"* ]]; then
+      yay -S hyprland
+    fi
+  args:
+    creates: /usr/bin/hyprland

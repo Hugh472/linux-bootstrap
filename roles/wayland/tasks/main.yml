@@ -1,0 +1,15 @@
+---
+- name: Enable Wayland
+  shell: |
+    if [[ "{{ os_id.stdout }}" == *"debian"* ]]; then
+      sudo apt install -y wayland
+      sudo apt install -y gnome-session-wayland
+    elif [[ "{{ os_id.stdout }}" == *"fedora"* ]]; then
+      sudo dnf install -y wayland
+      sudo dnf install -y gnome-session-wayland-session
+    elif [[ "{{ os_id.stdout }}" == *"endeavouros"* ]]; then
+      sudo pacman -Syu wayland
+      sudo pacman -Syu gnome-session-wayland
+    fi
+  args:
+    creates: /usr/bin/wayland

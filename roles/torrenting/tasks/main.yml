@@ -1,0 +1,9 @@
+---
+- name: Install torrenting tools
+  package:
+    name: "{{ item }}"
+    state: present
+  loop:
+    - qbittorrent
+    - transmission-cli
+    - transmission-daemon
