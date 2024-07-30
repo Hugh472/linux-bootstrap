@@ -25,7 +25,6 @@
   args:
     creates: /opt/cemu/Games/BreathOfTheWild
 
----
 - name: Install Yuzu Emulator
   shell: |
     if [[ "{{ os_id.stdout }}" == *"debian"* ]]; then

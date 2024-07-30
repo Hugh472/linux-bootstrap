@@ -1,6 +1,6 @@
 ---
 - name: Central Playbook
-  hosts: all
+  hosts: local
   become: yes
   
   vars:
@@ -45,13 +45,13 @@
       - hdparm  
   roles:
     - common
-    - gpu
-    - flatpak
     - dev_tools
-    - zsh
-    - wakeonlan
-    - wayland
-    #- hyprland
     - emulators
-    - torrenting
+    - flatpak
+    - gpu
+    #- hyprland    
     - k8s_tools
+    - torrenting 
+    - wakeonlan
+    #- wayland
+    - zsh
