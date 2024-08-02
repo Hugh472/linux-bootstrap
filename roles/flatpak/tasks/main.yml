@@ -32,11 +32,12 @@
     - org.standardnotes.standardnotes
     - org.ardour.Ardour
     - org.mozilla.firefox
+    - com.vscodium.codium
 
-- name: Install Calibre DeDRM_tools plugin
-  shell: |
-    mkdir -p ~/.config/calibre/plugins
-    wget https://github.com/noDRM/DeDRM_tools/releases/download/v7.2.1/DeDRM_plugin.zip -O ~/.config/calibre/plugins/DeDRM_plugin.zip
-    calibre-customize -b ~/.config/calibre/plugins/DeDRM_plugin.zip
-  args:
-    creates: ~/.config/calibre/plugins/DeDRM_plugin.zip
+# - name: Install Calibre DeDRM_tools plugin
+#   shell: |
+#     mkdir -p ~/.config/calibre/plugins
+#     wget https://github.com/noDRM/DeDRM_tools/releases/download/v7.2.1/DeDRM_plugin.zip -O ~/.config/calibre/plugins/DeDRM_plugin.zip
+#     calibre-customize -b ~/.config/calibre/plugins/DeDRM_plugin.zip
+#   args:
+#     creates: ~/.config/calibre/plugins/DeDRM_plugin.zip

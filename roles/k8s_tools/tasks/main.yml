@@ -26,15 +26,33 @@
 
     - name: Install Docker CE
       package:
-        name: docker-ce
+        name: 
+        - docker-ce
+        - docker-ce-cli 
+        - containerd.io 
+        - docker-buildx-plugin 
+        - docker-compose-plugin
         state: present
       when: ansible_os_family == 'Debian'
 
     - name: Install Docker on Fedora
       package:
-        name: docker
+        name: 
+        - docker-ce
+        - docker-ce-cli 
+        - containerd.io 
+        - docker-buildx-plugin 
+        - docker-compose-plugin
         state: present
       when: ansible_os_family == 'RedHat'
+      
+    - name: Install kubectl on Arch-based systems
+      package:
+        name: 
+        - docker
+        - docker-compose
+        state: present
+      when: ansible_os_family == 'Archlinux'
 
     - name: Start and enable Docker service
       systemd:
@@ -44,29 +62,43 @@
 
 - name: Install kubectl
   block:
-    - name: Download kubectl
-      get_url:
-        url: https://dl.k8s.io/release/v1.21.0/bin/linux/amd64/kubectl
-        dest: /usr/local/bin/kubectl
-        mode: '0755'
+    - name: Install kubectl on Debian-based systems
+      package:
+        name: kubectl
+        state: present
+      when: ansible_os_family == 'Debian'
+
+    - name: Install kubectl on Fedora-based systems
+      package:
+        name: kubernetes-client
+        state: present
+      when: ansible_os_family == 'RedHat'
+
+    - name: Install kubectl on Arch-based systems
+      package:
+        name: kubectl
+        state: present
+      when: ansible_os_family == 'Archlinux'
 
 - name: Install k9s
   block:
-    - name: Download k9s
-      get_url:
-        url: https://github.com/derailed/k9s/releases/download/v0.24.10/k9s_Linux_amd64.tar.gz
-        dest: /tmp/k9s_Linux_amd64.tar.gz
+    - name: Install k9s on Debian-based systems
+      apt:
+        name: k9s
+        state: present
+      when: ansible_os_family == 'Debian'
 
-    - name: Extract k9s
-      unarchive:
-        src: /tmp/k9s_Linux_amd64.tar.gz
-        dest: /usr/local/bin/
-        remote_src: yes
+    - name: Install k9s on Fedora-based systems
+      dnf:
+        name: k9s
+        state: present
+      when: ansible_os_family == 'RedHat'
 
-    - name: Set permissions for k9s
-      file:
-        path: /usr/local/bin/k9s
-        mode: '0755'
+    - name: Install k9s on Arch-based systems
+      pacman:
+        name: k9s
+        state: present
+      when: ansible_os_family == 'Archlinux'
 
 - name: Install k3s
   block:
@@ -75,21 +107,22 @@
 
 - name: Install Helm
   block:
-    - name: Download Helm
-      get_url:
-        url: https://get.helm.sh/helm-v3.6.3-linux-amd64.tar.gz
-        dest: /tmp/helm-v3.6.3-linux-amd64.tar.gz
+    - name: Install Helm on Debian-based systems
+      shell: |
+        curl https://baltocdn.com/helm/signing.asc | sudo apt-key add -
+        sudo apt-get install apt-transport-https --yes
+        echo "deb https://baltocdn.com/helm/stable/debian/ all main" | sudo tee /etc/apt/sources.list.d/helm-stable-debian.list
+        sudo apt-get update
+        sudo apt-get install helm
+      when: ansible_os_family == 'Debian'
 
-    - name: Extract Helm
-      unarchive:
-        src: /tmp/helm-v3.6.3-linux-amd64.tar.gz
-        dest: /tmp/
-        remote_src: yes
+    - name: Install Helm on Fedora-based systems
+      shell: |
+        curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+      when: ansible_os_family == 'RedHat'
 
-    - name: Move Helm binary
-      command: mv /tmp/linux-amd64/helm /usr/local/bin/helm
-
-    - name: Set permissions for Helm
-      file:
-        path: /usr/local/bin/helm
-        mode: '0755'
+    - name: Install Helm on Arch-based systems
+      pacman:
+        name: helm
+        state: present
+      when: ansible_os_family == 'Archlinux'

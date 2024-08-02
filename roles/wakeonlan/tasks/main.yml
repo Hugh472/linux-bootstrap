@@ -26,6 +26,6 @@
 - name: Configure encrypted drive for Wake on LAN
   shell: |
     if [ -n "{{ luks_check.stdout }}" ]; then
-      sudo cryptsetup luksHeaderBackup /dev/sdX --header-backup-file /etc/cryptsetup-headers/$(hostname)-$(date +%F).header
+      sudo cryptsetup luksHeaderBackup /dev/sda --header-backup-file /etc/cryptsetup-headers/$(hostname)-$(date +%F).header
     fi
   when: luks_check.stdout is defined and luks_check.stdout != ""

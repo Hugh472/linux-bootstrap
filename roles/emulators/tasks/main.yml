@@ -17,13 +17,13 @@
   args:
     creates: /opt/cemu
 
-- name: Download and set up Breath of the Wild
-  shell: |
-    mkdir -p /opt/cemu/Games
-    wget <URL_TO_BOTW> -O /opt/cemu/Games/BreathOfTheWild.zip
-    unzip /opt/cemu/Games/BreathOfTheWild.zip -d /opt/cemu/Games/BreathOfTheWild
-  args:
-    creates: /opt/cemu/Games/BreathOfTheWild
+# - name: Download and set up Breath of the Wild
+#   shell: |
+#     mkdir -p /opt/cemu/Games
+#     wget <URL_TO_BOTW> -O /opt/cemu/Games/BreathOfTheWild.zip
+#     unzip /opt/cemu/Games/BreathOfTheWild.zip -d /opt/cemu/Games/BreathOfTheWild
+#   args:
+#     creates: /opt/cemu/Games/BreathOfTheWild
 
 - name: Install Yuzu Emulator
   shell: |

@@ -45,13 +45,13 @@
       - hdparm  
   roles:
     - common
+    - gpu
+    - flatpak
+    - zsh
     - dev_tools
     - emulators
-    - flatpak
-    - gpu
     #- hyprland    
     - k8s_tools
     - torrenting 
-    - wakeonlan
+    #- wakeonlan
     #- wayland
-    - zsh
