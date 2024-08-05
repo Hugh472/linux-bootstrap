@@ -17,6 +17,7 @@
       - git
       - ethtool
       - hdparm
+      - steam
     debian_packages:
       - lshw
       - nvme-cli
@@ -30,6 +31,7 @@
       - git
       - ethtool
       - hdparm
+      - steam
     endeavoros_packages:
       - lshw
       - nvme-cli
@@ -42,7 +44,9 @@
       - zsh
       - git
       - ethtool
-      - hdparm  
+      - hdparm
+      - nerd-fonts
+      - steam
   roles:
     - common
     - gpu
@@ -50,8 +54,8 @@
     - zsh
     - dev_tools
     - emulators
-    #- hyprland    
     - k8s_tools
     - torrenting 
-    #- wakeonlan
     #- wayland
+    #- hyprland    
+    #- wakeonlan

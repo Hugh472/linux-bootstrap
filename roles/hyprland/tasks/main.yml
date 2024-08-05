@@ -1,5 +1,6 @@
 ---
 - name: Enable Hyprland
+  become: false
   shell: |
     if [[ "{{ os_id.stdout }}" == *"debian"* ]]; then
       sudo apt install -y hyprland
@@ -11,3 +12,14 @@
     fi
   args:
     creates: /usr/bin/hyprland
+
+- name: Install Hyprland utils on Arch-based systems
+  package:
+    name: 
+    - thunar
+    - wofi
+    - swayidle
+    - swaylock
+    - egl-wayland
+    state: present
+  when: ansible_os_family == 'Archlinux'

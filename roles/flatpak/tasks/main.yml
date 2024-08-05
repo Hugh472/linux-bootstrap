@@ -33,6 +33,7 @@
     - org.ardour.Ardour
     - org.mozilla.firefox
     - com.vscodium.codium
+    - org.wezfurlong.wezterm
 
 # - name: Install Calibre DeDRM_tools plugin
 #   shell: |

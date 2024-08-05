@@ -30,6 +30,7 @@
   loop:
     - nvidia
     - nvidia-utils
+    - lib32-nvidia-utils
     - vulkan-icd-loader
   when: gpu_vendor.stdout.find('NVIDIA') != -1 and os_id.stdout.find('endeavouros') != -1
 
