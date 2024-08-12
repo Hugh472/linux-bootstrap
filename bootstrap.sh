@@ -1,12 +1,12 @@
-#!/bin/bash
+#!/usr/local/env bash
 
 # Install necessary dependencies
-if [ -f /etc/debian_version ]; then
+if [[ "$(command -v apt)" ]]; then
     sudo apt update
     sudo apt install -y git ansible
-elif [ -f /etc/fedora-release ]; then
+elif [[ "$(command -v dnf)" ]]; then
     sudo dnf install -y git ansible
-elif [ -f /etc/arch-release ]; then
+elif [[ "$(command -v pacman)" ]]; then
     sudo pacman -Syu --noconfirm git ansible
 else
     echo "Unsupported Linux distribution."
@@ -16,36 +16,59 @@ fi
 # Clone the repository
 # Define the repository URL and the directory to clone into
 REPO_URL="https://github.com/Hugh472/linux-bootstrap.git"
-CLONE_DIR="linux-bootstrap"
-cd /home/Documents
-# Check if the directory exists
-if [ -d "$CLONE_DIR" ]; then
-    echo "Directory $CLONE_DIR already exists. Skipping clone."
+REPO_DIR="linux-bootstrap"
+REPO_DIR="$HOME/$REPO_NAME"
+
+# Function to clone or update the repo
+clone_or_update_repo() {
+    if [[ -d "$REPO_DIR/.git" ]]; then
+        echo "Repository already exists. Pulling the latest changes..."
+        cd $REPO_DIR
+        git pull origin main
+    else
+        echo "Cloning the repository..."
+        git clone "$REPO_URL" "$REPO_DIR"
+    fi
+}
+
+# Check if the repo is cloned somewhere under the home directory
+cd /
+existing_repo_dir=$(find "$HOME" -type d -name "$REPO_NAME" -exec test -e "{}/.git" ';' -print -quit)
+
+if [[ -n "$existing_repo_dir" ]]; then
+    echo "Repository found at $existing_repo_dir"
+    REPO_DIR="$existing_repo_dir"
 else
-    echo "Directory $CLONE_DIR does not exist. Cloning repository."
-    git clone "$REPO_URL" "$CLONE_DIR"
+    echo "No existing repository found under the home directory."
 fi
 
-# Define the target directory
-TARGET_DIR="linux-bootstrap"
+# Clone or update the repository
+clone_or_update_repo
 
-# Get the absolute path of the target directory
-ABS_TARGET_DIR=$(realpath "$TARGET_DIR")
+# Navigate to the repo directory
+cd "$REPO_DIR" || exit
 
-# Get the current working directory
-CURRENT_DIR=$(pwd)
-
-# Compare the current directory with the target directory
-if [ "$CURRENT_DIR" != "$ABS_TARGET_DIR" ]; then
-    echo "Not in the target directory. Changing directory to $TARGET_DIR."
-    cd "$TARGET_DIR" || { echo "Failed to change directory to $TARGET_DIR."; exit 1; }
-else
-    echo "Already in the target directory $TARGET_DIR."
-fi
-
+# Confirm latest changes
 pwd
+ls -al
+git status
 
-ls -la
+echo "Repository is up to date."
 
-# Run the Ansible playbook
-ansible-playbook -c local setup.yml
+
+# Prompt the user for the GitHub token
+read -sp 'Enter your GitHub token: ' GITHUB_TOKEN
+echo
+
+# Prompt the user for the GitHub username
+read -p 'Enter your GitHub username: ' GITHUB_USERNAME
+
+# Prompt the user for the GitHub email
+read -p 'Enter your GitHub email: ' GITHUB_EMAIL
+
+# Export the token as an environment variable
+export GITHUB_TOKEN
+
+
+# Run the Ansible playbook with extra variables
+ansible-playbook -c local setup.yml --extra-vars "github_user=${GITHUB_USERNAME} github_email=${GITHUB_EMAIL}"

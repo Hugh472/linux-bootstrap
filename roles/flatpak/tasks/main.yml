@@ -42,3 +42,29 @@
 #     calibre-customize -b ~/.config/calibre/plugins/DeDRM_plugin.zip
 #   args:
 #     creates: ~/.config/calibre/plugins/DeDRM_plugin.zip
+
+- name: Create symlink for codium CLI
+  file:
+    src: /var/lib/flatpak/exports/bin/com.vscodium.codium
+    dest: /usr/local/bin/codium
+    state: link
+    force: yes
+
+- name: Ensure codium CLI is executable
+  file:
+    path: /usr/local/bin/codium
+    mode: '0755'
+    state: file
+
+- name: Verify codium command works
+  command: codium --version
+  register: result
+  changed_when: False
+  failed_when: result.rc != 0
+  ignore_errors: yes
+
+- name: Debug codium command output
+  debug:
+    var: result.stdout
+  when: result.rc == 0
+

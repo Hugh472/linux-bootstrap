@@ -1,0 +1,86 @@
+---
+- name: Setup Git, GitHub CLI, SSH, and GitHub Authentication
+  hosts: all
+  become: yes
+  vars:
+    ssh_key_comment: "{{ github_email }}"
+
+  tasks:
+    - name: Determine the operating system
+      ansible.builtin.set_fact:
+        os_family: "{{ ansible_os_family }}"
+        os_distribution: "{{ ansible_distribution }}"
+
+    - name: Install packages on Fedora
+      ansible.builtin.yum:
+        name:
+          - git
+          - gh
+          - openssh
+        state: present
+      when: os_family == "RedHat" and os_distribution == "Fedora"
+
+    - name: Install packages on Debian
+      ansible.builtin.apt:
+        name:
+          - git
+          - gh
+          - openssh-client
+        state: present
+        update_cache: yes
+      when: os_family == "Debian"
+
+    - name: Install packages on EndeavourOS
+      ansible.builtin.pacman:
+        name:
+          - git
+          - github-cli
+          - openssh
+        state: present
+        update_cache: yes
+      when: os_family == "Archlinux" and os_distribution == "EndeavourOS"
+
+    - name: Ensure .ssh directory exists
+      ansible.builtin.file:
+        path: "{{ ansible_env.HOME }}/.ssh"
+        state: directory
+        mode: '0700'
+
+    - name: Generate SSH key
+      ansible.builtin.openssh_keypair:
+        path: "{{ ansible_env.HOME }}/.ssh/id_rsa"
+        type: rsa
+        size: 4096
+        mode: '0600'
+        comment: "{{ ssh_key_comment }}"
+      register: ssh_key
+
+    - name: Add SSH private key to the agent
+      ansible.builtin.command: ssh-add "{{ ssh_key.private_key }}"
+      environment:
+        SSH_AUTH_SOCK: "{{ ansible_env.SSH_AUTH_SOCK }}"
+      become: false
+
+    - name: Display SSH public key
+      ansible.builtin.debug:
+        msg: "{{ ssh_key.public_key }}"
+
+    - name: Authenticate to GitHub using gh CLI
+      ansible.builtin.command: gh auth login --with-token
+      args:
+        stdin: "{{ lookup('env', 'GITHUB_TOKEN') }}"
+      become: false
+
+    - name: Add SSH key to GitHub account
+      ansible.builtin.command: gh ssh-key add "{{ ssh_key.public_key }}" --title "ansible-key-{{ ansible_date_time.iso8601 }}"
+      become: false
+      environment:
+        GH_TOKEN: "{{ lookup('env', 'GITHUB_TOKEN') }}"
+
+    - name: Configure Git user name
+      ansible.builtin.command: git config --global user.name "{{ github_user }}"
+      become: false
+
+    - name: Configure Git user email
+      ansible.builtin.command: git config --global user.email "{{ github_email }}"
+      become: false

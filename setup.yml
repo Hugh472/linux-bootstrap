@@ -49,9 +49,11 @@
       - steam
   roles:
     - common
+    - storage
     - gpu
     - flatpak
     - zsh
+    - git
     - dev_tools
     - emulators
     - k8s_tools
