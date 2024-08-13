@@ -1,0 +1,94 @@
+---
+- name: Install and configure Flatpak
+  package:
+    name: flatpak
+    state: present
+  when: os_id.stdout.find('fedora') != -1 or os_id.stdout.find('debian') != -1 or os_id.stdout.find('endeavouros') != -1
+
+- name: Add Flathub repository
+  command: flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+
+- name: Remove native versions of applications
+  package:
+    name: "{{ item }}"
+    state: absent
+  loop:
+    - thunderbird
+    - onlyoffice
+    - calibre
+    - standardnotes
+    - ardour
+    - firefox
+
+- name: Install applications as Flatpaks
+  flatpak:
+    name: "{{ item }}"
+    state: present
+    remote: flathub
+  loop:
+    - org.mozilla.Thunderbird
+    - org.onlyoffice.desktopeditors
+    - com.calibre_ebook.calibre
+    - org.standardnotes.standardnotes
+    - org.ardour.Ardour
+    - org.mozilla.firefox
+    - com.vscodium.codium
+    - org.wezfurlong.wezterm
+    - com.usebottles.bottles
+    - org.telegram.desktop
+    - com.github.tchx84.Flatseal
+    - com.github.Matoking.protontricks
+    - com.obsproject.Studio
+    - com.discordapp.Discord
+    - com.heroicgameslauncher.hgl
+    - org.gimp.GIMP
+    - org.blender.Blender
+    - org.inkscape.Inkscape
+    - org.gnome.baobab
+    - it.mijorus.gearlever
+
+# - name: Install Calibre DeDRM_tools plugin
+#   shell: |
+#     mkdir -p ~/.config/calibre/plugins
+#     wget https://github.com/noDRM/DeDRM_tools/releases/download/v10.0.3/DeDRM_tools_10.0.3.zip -O ~/.config/calibre/plugins/DeDRM_plugin.zip
+#     calibre-customize -b ~/.config/calibre/plugins/DeDRM_plugin.zip
+#   args:
+#     creates: ~/.config/calibre/plugins/DeDRM_plugin.zip
+
+- name: Create symlink for codium CLI
+  file:
+    src: /var/lib/flatpak/exports/bin/com.vscodium.codium
+    dest: /usr/local/bin/codium
+    state: link
+    force: yes
+
+- name: Ensure codium CLI is executable
+  file:
+    path: /usr/local/bin/codium
+    mode: '0755'
+    state: file
+
+- name: Verify codium command works
+  command: codium --version
+  register: result
+  changed_when: False
+  failed_when: result.rc != 0
+  ignore_errors: yes
+
+- name: Debug codium command output
+  debug:
+    var: result.stdout
+  when: result.rc == 0
+
+# - name: Set WezTerm as the default terminal in GNOME
+#   ansible.builtin.command:
+#     cmd: gsettings set org.gnome.desktop.default-applications.terminal exec 'flatpak run org.wezfurlong.WezTerm'
+#   when: ansible_facts['desktop_environment'] == "gnome"
+
+- name: Grant WezTerm access to the host filesystem
+  ansible.builtin.command:
+    cmd: flatpak override --user --filesystem=host org.wezfurlong.WezTerm
+
+- name: Grant VSCodium access to the host filesystem
+  ansible.builtin.command:
+    cmd: flatpak override --user --filesystem=host com.vscodium.codium

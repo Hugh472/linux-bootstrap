@@ -1,0 +1,65 @@
+---
+- name: Determine the OS
+  shell: cat /etc/os-release | grep "^ID="
+  register: os_id
+  changed_when: false
+
+- name: Set package list based on OS
+  set_fact:
+    packages: "{{ fedora_packages }}" 
+  when: os_id.stdout.find('fedora') != -1
+
+- name: Set package list based on OS
+  set_fact:
+    packages: "{{ debian_packages }}"
+  when: os_id.stdout.find('debian') != -1
+
+- name: Set package list based on OS
+  set_fact:
+    packages: "{{ endeavoros_packages }}"
+  when: os_id.stdout.find('endeavouros') != -1
+
+- name: Enable RPM Fusion repositories
+  ansible.builtin.dnf:
+    name: 
+      - https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm
+      - https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm
+    state: present
+  when: os_id.stdout.find('fedora') != -1
+  become: true
+
+- name: Add non-free and contrib repositories
+  ansible.builtin.apt_repository:
+    repo: "deb http://deb.debian.org/debian {{ ansible_distribution_release }} main contrib non-free"
+    state: present
+    update_cache: yes
+  when: os_id.stdout.find('debian') != -1
+  become: true
+
+- name: Update all packages and firmware on Debian
+  apt: 
+    update_cache: yes
+    upgrade: dist
+  when: os_id.stdout.find('debian') != -1
+  become: true
+
+- name: Update all packages and firmware on Fedora
+  dnf:
+    name: '*'
+    state: latest
+  when: os_id.stdout.find('fedora') != -1
+  become: true
+
+- name: Update all packages and firmware on EndeavourOS
+  pacman:
+    update_cache: yes
+    upgrade: yes
+  when: os_id.stdout.find('endeavouros') != -1
+  become: true
+
+- name: Install necessary packages
+  package:
+    name: "{{ packages }}"
+    state: present
+  become: true
+

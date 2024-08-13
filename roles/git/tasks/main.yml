@@ -1,0 +1,71 @@
+---
+- name: Determine the OS
+  shell: cat /etc/os-release | grep "^ID="
+  register: os_id
+  changed_when: false
+
+- name: Install packages on Fedora
+  ansible.builtin.dnf:
+    name:
+      - git
+      - gh
+      - openssh
+    state: present
+  when: os_id.stdout.find('fedora') != -1
+  become: true
+
+- name: Install packages on Debian
+  ansible.builtin.apt:
+    name:
+      - git
+      - gh
+      - openssh-client
+    state: present
+    update_cache: yes
+  when: os_id.stdout.find('debian') != -1
+  become: true
+
+- name: Install packages on EndeavourOS
+  ansible.builtin.pacman:
+    name:
+      - git
+      - github-cli
+      - openssh
+    state: present
+    update_cache: yes
+  when: os_id.stdout.find('endeavouros') != -1
+  become: true
+
+- name: Ensure .ssh directory exists
+  ansible.builtin.file:
+    path: "{{ ansible_env.HOME }}/.ssh"
+    state: directory
+    mode: '0700'
+
+- name: Generate SSH key
+  ansible.builtin.openssh_keypair:
+    path: "{{ ansible_env.HOME }}/.ssh/id_rsa"
+    type: rsa
+    size: 4096
+    mode: '0600'
+    comment: "{{ github_email }}"
+  register: ssh_key
+
+- name: enable ssh-agent
+  shell: eval $(ssh-agent)
+
+- name: Add SSH private key to the agent
+  ansible.builtin.command: ssh-add "{{ ansible_env.HOME }}/.ssh/id_rsa"
+
+- name: Display SSH public key
+  ansible.builtin.debug:
+    msg: "{{ ssh_key.public_key }}"
+
+- name: Add SSH key to GitHub account
+  shell: gh ssh-key add "{{ ansible_env.HOME }}/.ssh/id_rsa.pub" --title "ansible-key-{{ ansible_date_time.iso8601 }}"
+
+- name: Configure Git user name
+  shell: git config --global user.name "{{ github_user }}"
+
+- name: Configure Git user email
+  shell: git config --global user.email "{{ github_email }}"

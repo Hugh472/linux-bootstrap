@@ -1,0 +1,31 @@
+---
+- name: Set up Wake on LAN
+  shell: |
+    sudo ethtool -s eth0 wol g
+    sudo tee -a /etc/systemd/system/wol.service > /dev/null <<EOT
+    [Unit]
+    Description=Configure Wake on LAN
+    After=network.target
+
+    [Service]
+    Type=oneshot
+    ExecStart=/usr/sbin/ethtool -s eth0 wol g
+
+    [Install]
+    WantedBy=default.target
+    EOT
+    sudo systemctl enable wol.service
+  args:
+    creates: /etc/systemd/system/wol.service
+
+- name: Check if the drive is encrypted
+  shell: lsblk -o NAME,FSTYPE | grep -w luks
+  register: luks_check
+  ignore_errors: yes
+
+- name: Configure encrypted drive for Wake on LAN
+  shell: |
+    if [ -n "{{ luks_check.stdout }}" ]; then
+      sudo cryptsetup luksHeaderBackup /dev/sda --header-backup-file /etc/cryptsetup-headers/$(hostname)-$(date +%F).header
+    fi
+  when: luks_check.stdout is defined and luks_check.stdout != ""

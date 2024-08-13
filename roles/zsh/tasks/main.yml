@@ -1,0 +1,39 @@
+---
+- name: Install Zsh
+  package:
+    name: zsh
+    state: present
+
+- name: Install Starship prompt
+  become: false
+  shell: |
+    curl -fsSL https://starship.rs/install.sh | sh -s -- -y
+  args:
+    creates: /usr/local/bin/starship
+
+- name: Set Zsh as the default shell
+  become: false
+  user:
+    name: "{{ lookup('env', 'USER') }}"
+    shell: /bin/zsh
+
+- name: Copy Starship config
+  become: false
+  copy:
+    src: starship.toml
+    dest: ~/.config/starship.toml
+    mode: '0644'
+
+- name: Copy .zshrc config
+  become: false
+  copy:
+    src: .zshrc
+    dest: ~/.zshrc
+    mode: '0644'
+
+- name: Install zsh-autosuggestions plugin
+  become: false
+  git:
+    repo: 'https://github.com/zsh-users/zsh-autosuggestions'
+    dest: ~/.zsh/zsh-autosuggestions
+    version: master

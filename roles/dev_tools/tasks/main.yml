@@ -1,0 +1,38 @@
+---
+- name: Install asdf and plugins
+  shell: |
+    git clone https://github.com/asdf-vm/asdf.git ~/.asdf --branch v0.10.0
+    echo '. $HOME/.asdf/asdf.sh' >> ~/.bashrc
+    . ~/.bashrc
+    asdf plugin-add nodejs https://github.com/asdf-vm/asdf-nodejs.git
+    asdf install nodejs latest
+    asdf global nodejs latest
+  args:
+    creates: ~/.asdf
+
+# - name: Install Golang
+#   package:
+#     name: golang
+#     state: present
+
+- name: Install Miniconda
+  shell: |
+    wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O /tmp/miniconda.sh
+    bash /tmp/miniconda.sh -b -p $HOME/miniconda
+    $HOME/miniconda/bin/conda init zsh
+  args:
+    creates: $HOME/miniconda
+
+# - name: Install Poetry
+#   pip:
+#     name: poetry
+    
+
+# - name: Install Molecule
+#   pip:
+#     name: molecule
+
+- name: Install rustup
+  shell: curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+  args:
+    creates: /usr/local/bin/rustup
