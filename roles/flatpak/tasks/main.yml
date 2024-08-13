@@ -79,13 +79,15 @@
     var: result.stdout
   when: result.rc == 0
 
-- name: Set WezTerm as the default terminal in GNOME
-  ansible.builtin.command:
-    cmd: gsettings set org.gnome.desktop.default-applications.terminal exec 'flatpak run org.wezfurlong.WezTerm'
-  when: ansible_facts['desktop_environment'] == "gnome"
+# - name: Set WezTerm as the default terminal in GNOME
+#   ansible.builtin.command:
+#     cmd: gsettings set org.gnome.desktop.default-applications.terminal exec 'flatpak run org.wezfurlong.WezTerm'
+#   when: ansible_facts['desktop_environment'] == "gnome"
 
 - name: Grant WezTerm access to the host filesystem
   ansible.builtin.command:
     cmd: flatpak override --user --filesystem=host org.wezfurlong.WezTerm
 
-
+- name: Grant VSCodium access to the host filesystem
+  ansible.builtin.command:
+    cmd: flatpak override --user --filesystem=host com.vscodium.codium

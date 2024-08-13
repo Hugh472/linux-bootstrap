@@ -1,17 +1,67 @@
 ---
-- name: Enable Wayland
-  package:
-    name: "{{ item }}"
-    state: present
-  loop:
-     - wayland
-     - gnome-session-wayland
-     - xorg-xwayland
-     - qt6-wayland
-     # Not sure if needed:
-     #- xwaylandvideobridge
+# - name: Enable Wayland
+#   package:
+#     name: "{{ item }}"
+#     state: present
+#   loop:
+#      - wayland
+#      - gnome-session-wayland
+#      - xorg-xwayland
+#      - qt6-wayland
+#      # Not sure if needed:
+#      #- xwaylandvideobridge
+- name: Determine the OS
+  shell: cat /etc/os-release | grep "^ID="
+  register: os_id
+  changed_when: false
  
-- name: Copy Elrctron config
+- name: Install Wayland support packages
+  ansible.builtin.apt:
+    name:
+      - gnome-shell
+      - gdm3
+      - egl-wayland
+      - xwayland
+    state: present
+    update_cache: yes
+  when: os_id.stdout.find('debian') != -1
+
+- name: Install Wayland support packages
+  ansible.builtin.dnf:
+    name:
+      - gnome-shell
+      - gdm
+      - egl-wayland
+      - xwayland
+    state: present
+  when: os_id.stdout.find('fedora') != -1
+
+
+- name: Install Wayland support packages
+  ansible.builtin.pacman:
+    name: 
+      - gnome-shell
+      - gdm
+      - egl-wayland
+      - xorg-server-xwayland
+    state: present
+  when: os_id.stdout.find('endeavouros') != -1
+
+- name: Enable GDM to use Wayland
+  ansible.builtin.replace:
+    path: /etc/gdm/custom.conf
+    regexp: '^#WaylandEnable=false'
+    replace: 'WaylandEnable=true'
+  notify: restart gdm
+
+- name: Enable GDM to use Wayland
+  ansible.builtin.replace:
+    path: /etc/gdm3/daemon.conf
+    regexp: '^#WaylandEnable=false'
+    replace: 'WaylandEnable=true'
+  notify: restart gdm3
+
+- name: Copy Electron config
   become: false
   copy:
     src: electron-flags.conf

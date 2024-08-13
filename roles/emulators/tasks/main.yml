@@ -1,4 +1,9 @@
 ---
+- name: Determine the OS
+  shell: cat /etc/os-release | grep "^ID="
+  register: os_id
+  changed_when: false
+
 - name: Install Wii U Emulator (Cemu)
   shell: |
     if [[ "{{ os_id.stdout }}" == *"debian"* ]]; then

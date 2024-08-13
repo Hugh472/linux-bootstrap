@@ -3,12 +3,6 @@
   command: lsblk -o NAME,TYPE,FSTYPE,SIZE,MOUNTPOINT -J
   register: lsblk_output
 
-- name: Ensure jq is installed
-  package:
-    name: jq
-    state: present
-  when: ansible_distribution in ["Fedora", "Debian", "EndeavourOS"]
-
 - name: Parse storage devices
   set_fact:
     devices: "{{ lsblk_output.stdout | from_json | json_query('blockdevices[?type==`disk` || type==`part` || type==`lvm` || type==`crypt`].{name: name, fstype: fstype, mountpoint: mountpoint, size: size}') }}"
@@ -33,5 +27,4 @@
 
 - name: Mount all filesystems
   command: mount -a
-  # args:
-  #   warn: false
+
