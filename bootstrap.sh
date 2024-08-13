@@ -16,34 +16,30 @@ fi
 # Clone the repository
 # Define the repository URL and the directory to clone into
 REPO_URL="https://github.com/Hugh472/linux-bootstrap.git"
-REPO_DIR="linux-bootstrap"
-REPO_DIR="$HOME/$REPO_NAME"
+REPO_NAME="linux-bootstrap"
+REPO_DIR="$HOME/Documents/$REPO_NAME"
 
-# Function to clone or update the repo
-clone_or_update_repo() {
-    if [[ -d "$REPO_DIR/.git" ]]; then
-        echo "Repository already exists. Pulling the latest changes..."
-        cd $REPO_DIR
-        git pull origin main
-    else
-        echo "Cloning the repository..."
-        git clone "$REPO_URL" "$REPO_DIR"
-    fi
-}
 
 # Check if the repo is cloned somewhere under the home directory
 cd /
-existing_repo_dir=$(find "$HOME" -type d -name "$REPO_NAME" -exec test -e "{}/.git" ';' -print -quit)
-
+existing_repo_dir=$(find "$HOME" -type d -path "*/$REPO_NAME/.git" -print -quit)
+echo "existing_repo_dir: $existing_repo_dir"
 if [[ -n "$existing_repo_dir" ]]; then
     echo "Repository found at $existing_repo_dir"
-    REPO_DIR="$existing_repo_dir"
+    REPO_DIR="$(dirname $existing_repo_dir)"
 else
     echo "No existing repository found under the home directory."
 fi
 
 # Clone or update the repository
-clone_or_update_repo
+if [[ -d "$REPO_DIR/.git" ]]; then
+    echo "Repository already exists. Pulling the latest changes..."
+    cd $REPO_DIR
+    git pull origin main
+else
+    echo "Cloning the repository..."
+    git clone "$REPO_URL" "$REPO_DIR"
+fi
 
 # Navigate to the repo directory
 cd "$REPO_DIR" || exit
@@ -68,7 +64,6 @@ read -p 'Enter your GitHub email: ' GITHUB_EMAIL
 
 # Export the token as an environment variable
 export GITHUB_TOKEN
-
 
 # Run the Ansible playbook with extra variables
 ansible-playbook -c local setup.yml --extra-vars "github_user=${GITHUB_USERNAME} github_email=${GITHUB_EMAIL}"

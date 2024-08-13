@@ -39,3 +39,15 @@
     fi
   args:
     creates: /usr/bin/yuzu
+
+- name: Install applications as Flatpaks
+  flatpak:
+    name: "{{ item }}"
+    state: present
+    remote: flathub
+  loop:
+    - net.kuribo64.melonDS
+    - org.libretro.RetroArch
+    - org.duckstation.DuckStation
+    - io.github.shiiion.primehack
+    - app.xemu.xemu
