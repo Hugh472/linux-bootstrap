@@ -2,6 +2,7 @@
 - name: Detect GPU type
   shell: lshw -C display | grep vendor | awk '{print $2}'
   register: gpu_vendor
+  become: true
 
 - name: Install NVIDIA drivers on Debian
   apt:
@@ -13,6 +14,7 @@
     - vulkan-utils
     - nvidia-cuda-toolkit
   when: gpu_vendor.stdout.find('NVIDIA') != -1 and os_id.stdout.find('debian') != -1
+  become: true
 
 - name: Install NVIDIA drivers on Fedora
   dnf:
@@ -27,6 +29,7 @@
     - vulkan-tools
     - vulkan-loader
   when: gpu_vendor.stdout.find('NVIDIA') != -1 and os_id.stdout.find('fedora') != -1
+  become: true
 
 - name: Install NVIDIA drivers on EndeavourOS
   pacman:
@@ -42,6 +45,7 @@
     - nvidia-libgl
     - lib32-nvidia-libgl
   when: gpu_vendor.stdout.find('NVIDIA') != -1 and os_id.stdout.find('endeavouros') != -1
+  become: true
 
 - name: Install AMD drivers on Debian
   apt:
@@ -51,6 +55,7 @@
     - mesa-vulkan-drivers
     - vulkan-utils
   when: gpu_vendor.stdout.find('AMD') != -1 and os_id.stdout.find('debian') != -1
+  become: true
 
 - name: Install AMD drivers on Fedora
   dnf:
@@ -60,6 +65,7 @@
     - xorg-x11-drv-amdgpu
     - vulkan
   when: gpu_vendor.stdout.find('AMD') != -1 and os_id.stdout.find('fedora') != -1
+  become: true
 
 - name: Install AMD drivers on EndeavourOS
   pacman:
@@ -69,11 +75,13 @@
     - xf86-video-amdgpu
     - vulkan-radeon
   when: gpu_vendor.stdout.find('AMD') != -1 and os_id.stdout.find('endeavouros') != -1
+  become: true
 
 - name: Test Vulkan installation
   shell: vulkaninfo
   register: vulkan_test
   ignore_errors: yes
+  become: true
 
 - name: Print Vulkan test results
   debug:

@@ -4,23 +4,25 @@
   register: os_id
   changed_when: false
 
-- name: Install Wii U Emulator (Cemu)
-  shell: |
-    if [[ "{{ os_id.stdout }}" == *"debian"* ]]; then
-      sudo apt install -y wine
-      wget https://cemu.info/releases/cemu_1.25.6.zip -O /tmp/cemu.zip
-      unzip /tmp/cemu.zip -d /opt/cemu
-    elif [[ "{{ os_id.stdout }}" == *"fedora"* ]]; then
-      sudo dnf install -y wine
-      wget https://cemu.info/releases/cemu_1.25.6.zip -O /tmp/cemu.zip
-      unzip /tmp/cemu.zip -d /opt/cemu
-    elif [[ "{{ os_id.stdout }}" == *"endeavouros"* ]]; then
-      sudo pacman -Syu wine
-      wget https://cemu.info/releases/cemu_1.25.6.zip -O /tmp/cemu.zip
-      unzip /tmp/cemu.zip -d /opt/cemu
-    fi
-  args:
-    creates: /opt/cemu
+# TODO: fix
+# - name: Install Wii U Emulator (Cemu)
+#   shell: |
+#     if [[ "{{ os_id.stdout }}" == *"debian"* ]]; then
+#       apt install -y wine
+#       wget https://cemu.info/releases/cemu_1.25.6.zip -O /tmp/cemu.zip
+#       unzip /tmp/cemu.zip -d /opt/cemu
+#     elif [[ "{{ os_id.stdout }}" == *"fedora"* ]]; then
+#       dnf install -y wine
+#       wget https://cemu.info/releases/cemu_1.25.6.zip -O /tmp/cemu.zip
+#       unzip /tmp/cemu.zip -d /opt/cemu
+#     elif [[ "{{ os_id.stdout }}" == *"endeavouros"* ]]; then
+#       pacman -Syu wine
+#       wget https://cemu.info/releases/cemu_1.25.6.zip -O /tmp/cemu.zip
+#       unzip /tmp/cemu.zip -d /opt/cemu
+#     fi
+#   args:
+#     creates: /opt/cemu
+#   become: true
 
 # - name: Download and set up Breath of the Wild
 #   shell: |
@@ -30,20 +32,21 @@
 #   args:
 #     creates: /opt/cemu/Games/BreathOfTheWild
 
-- name: Install Yuzu Emulator
-  shell: |
-    if [[ "{{ os_id.stdout }}" == *"debian"* ]]; then
-      sudo add-apt-repository ppa:jonathonf/yuzu -y
-      sudo apt update
-      sudo apt install -y yuzu
-    elif [[ "{{ os_id.stdout }}" == *"fedora"* ]]; then
-      sudo dnf config-manager --add-repo=https://copr.fedorainfracloud.org/coprs/geoffw/yuzu/repo/fedora-32/geoffw-yuzu-fedora-32.repo
-      sudo dnf install -y yuzu
-    elif [[ "{{ os_id.stdout }}" == *"endeavouros"* ]]; then
-      yay -S yuzu-mainline-bin
-    fi
-  args:
-    creates: /usr/bin/yuzu
+# - name: Install Yuzu Emulator
+#   shell: |
+#     if [[ "{{ os_id.stdout }}" == *"debian"* ]]; then
+#       add-apt-repository ppa:jonathonf/yuzu -y
+#       apt update
+#       apt install -y yuzu
+#     elif [[ "{{ os_id.stdout }}" == *"fedora"* ]]; then
+#       dnf config-manager --add-repo=https://copr.fedorainfracloud.org/coprs/geoffw/yuzu/repo/fedora-32/geoffw-yuzu-fedora-32.repo
+#       dnf install -y yuzu
+#     elif [[ "{{ os_id.stdout }}" == *"endeavouros"* ]]; then
+#       yay -S yuzu-mainline-bin
+#     fi
+#   args:
+#     creates: /usr/bin/yuzu
+#   become: true
 
 - name: Install applications as Flatpaks
   flatpak:

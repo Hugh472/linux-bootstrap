@@ -10,19 +10,23 @@
           - software-properties-common
         state: present
       when: ansible_os_family == 'Debian'
+      become: true
 
     - name: Add Docker GPG key
       command: curl -fsSL https://download.docker.com/linux/{{ ansible_distribution | lower }}/gpg | sudo apt-key add -
       when: ansible_os_family == 'Debian'
+      become: true
 
     - name: Add Docker repository
       command: add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/{{ ansible_distribution | lower }} $(lsb_release -cs) stable"
       when: ansible_os_family == 'Debian'
+      become: true
 
     - name: Update package index
       apt:
         update_cache: yes
       when: ansible_os_family == 'Debian'
+      become: true
 
     - name: Install Docker CE
       package:
@@ -34,6 +38,13 @@
         - docker-compose-plugin
         state: present
       when: ansible_os_family == 'Debian'
+      become: true
+
+    - name: enable dnf repo
+      shell: |
+        dnf -y install dnf-plugins-core
+        dnf-3 config-manager --add-repo https://download.docker.com/linux/fedora/docker-ce.repo
+      become: true
 
     - name: Install Docker on Fedora
       package:
@@ -45,6 +56,7 @@
         - docker-compose-plugin
         state: present
       when: ansible_os_family == 'RedHat'
+      become: true
       
     - name: Install kubectl on Arch-based systems
       package:
@@ -53,12 +65,14 @@
         - docker-compose
         state: present
       when: ansible_os_family == 'Archlinux'
+      become: true
 
     - name: Start and enable Docker service
       systemd:
         name: docker
         state: started
         enabled: yes
+      become: true
 
 - name: Install kubectl
   block:
@@ -67,43 +81,39 @@
         name: kubectl
         state: present
       when: ansible_os_family == 'Debian'
+      become: true
 
     - name: Install kubectl on Fedora-based systems
       package:
         name: kubernetes-client
         state: present
       when: ansible_os_family == 'RedHat'
+      become: true
 
     - name: Install kubectl on Arch-based systems
       package:
         name: kubectl
         state: present
       when: ansible_os_family == 'Archlinux'
+      become: true
 
-- name: Install k9s
-  block:
-    - name: Install k9s on Debian-based systems
-      apt:
-        name: k9s
-        state: present
-      when: ansible_os_family == 'Debian'
+# TODO: fix
+#- name: Install k9s 
+#  block:
+#    - name: Install k9s
+#      package:
+#        name: k9s
+#        state: present
+#    become: true
 
-    - name: Install k9s on Fedora-based systems
-      dnf:
-        name: k9s
-        state: present
-      when: ansible_os_family == 'RedHat'
-
-    - name: Install k9s on Arch-based systems
-      pacman:
-        name: k9s
-        state: present
-      when: ansible_os_family == 'Archlinux'
-
-- name: Install k3s
-  block:
-    - name: Install k3s
-      shell: curl -sfL https://get.k3s.io | sh -
+- name: Download k3sup
+  shell: curl -sLS https://get.k3sup.dev | sh
+    
+- name: Install k3sup
+  become: true
+  file:
+    src: ./k3sup
+    dest: /usr/local/bin/k3sup
 
 - name: Install Helm
   block:

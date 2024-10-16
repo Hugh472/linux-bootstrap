@@ -4,6 +4,7 @@
   become: false
   
   vars:
+    username: "{{ lookup('env', 'USER') }}"
     fedora_packages:
       - lshw
       - nvme-cli

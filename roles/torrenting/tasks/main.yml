@@ -8,6 +8,7 @@
     - transmission-cli
     - transmission-daemon
   when: ansible_os_family == 'RedHat'
+  become: true
 
 - name: Install torrenting tools
   package:
@@ -18,6 +19,7 @@
     - transmission-cli
     - transmission-daemon
   when: ansible_os_family == 'Debian'
+  become: true
   
 - name: Install torrenting tools
   package:
@@ -28,11 +30,12 @@
     - transmission-cli
     - transmission-gtk
   when: ansible_os_family == 'Archlinux'
+  become: true
   
 - name: Download Tor Browser tarball
   become: true
   get_url:
-    url: https://www.torproject.org/dist/torbrowser/13.5.2/tor-browser-linux-x86_64-13.5.2.tar.xz
+    url: https://www.torproject.org/dist/torbrowser/13.5.7/tor-browser-linux-x86_64-13.5.7.tar.xz
     dest: /tmp/tor-browser-linux-x86_64.tar.xz
 
 - name: Extract Tor Browser
@@ -42,12 +45,12 @@
     dest: /opt/
     remote_src: yes
 
-- name: Create symbolic link for Tor Browser
-  become: true
-  file:
-    src: /opt/tor-browser/start-tor-browser.desktop
-    dest: /usr/local/bin/tor-browser
-    state: link
+# - name: Create symbolic link for Tor Browser
+#   become: true
+#   file:
+#     src: /opt/tor-browser/start-tor-browser.desktop
+#     dest: /usr/local/bin/tor-browser
+#     state: link
 
 - name: Create desktop entry for Tor Browser
   become: true
@@ -56,8 +59,8 @@
     content: |
       [Desktop Entry]
       Name=Tor Browser
-      Exec=/opt/tor-browser_en-US/Browser/start-tor-browser
-      Icon=/opt/tor-browser_en-US/Browser/browser/chrome/icons/default/default128.png
+      Exec=/opt/tor-browser/start-tor-browser.desktop
+      Icon=/opt/tor-browser/Browser/browser/chrome/icons/default/default128.png
       Type=Application
       Categories=Network;WebBrowser;
       Comment=Browse the web anonymously with Tor Browser

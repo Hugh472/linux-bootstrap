@@ -3,7 +3,7 @@
   package:
     name: flatpak
     state: present
-  when: os_id.stdout.find('fedora') != -1 or os_id.stdout.find('debian') != -1 or os_id.stdout.find('endeavouros') != -1
+  become: true
 
 - name: Add Flathub repository
   command: flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
@@ -19,6 +19,7 @@
     - standardnotes
     - ardour
     - firefox
+  become: true
 
 - name: Install applications as Flatpaks
   flatpak:
@@ -46,6 +47,8 @@
     - org.inkscape.Inkscape
     - org.gnome.baobab
     - it.mijorus.gearlever
+  become: true
+  
 
 # - name: Install Calibre DeDRM_tools plugin
 #   shell: |
@@ -61,12 +64,14 @@
     dest: /usr/local/bin/codium
     state: link
     force: yes
+  become: true
 
 - name: Ensure codium CLI is executable
   file:
     path: /usr/local/bin/codium
     mode: '0755'
     state: file
+  become: true
 
 - name: Verify codium command works
   command: codium --version

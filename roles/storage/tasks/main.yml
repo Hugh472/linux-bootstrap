@@ -17,6 +17,7 @@
     src: /etc/fstab
     dest: /etc/fstab.bak
     backup: yes
+  become: true
 
 - name: Add storage devices to fstab
   blockinfile:
@@ -24,7 +25,8 @@
     marker: "# {mark} ANSIBLE MANAGED BLOCK - STORAGE DEVICES"
     block: |
       {{ fstab_entries }}
+  become: true
 
 - name: Mount all filesystems
   command: mount -a
-
+  become: true

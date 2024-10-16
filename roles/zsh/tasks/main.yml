@@ -3,6 +3,7 @@
   package:
     name: zsh
     state: present
+  become: true
 
 - name: Install Starship prompt
   become: false
@@ -12,9 +13,9 @@
     creates: /usr/local/bin/starship
 
 - name: Set Zsh as the default shell
-  become: false
+  become: true
   user:
-    name: "{{ lookup('env', 'USER') }}"
+    name: "{{ username }}"
     shell: /bin/zsh
 
 - name: Copy Starship config
