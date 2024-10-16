@@ -6,6 +6,8 @@ if [[ "$(command -v apt)" ]]; then
     sudo apt install -y git ansible
 elif [[ "$(command -v dnf)" ]]; then
     sudo dnf install -y git ansible
+    sudo dnf install https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm
+    sudo dnf install https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm
 elif [[ "$(command -v pacman)" ]]; then
     sudo pacman -Syu --noconfirm git ansible
 else
