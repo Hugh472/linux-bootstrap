@@ -37,6 +37,7 @@
     - org.wezfurlong.wezterm
     - com.usebottles.bottles
     - org.telegram.desktop
+    - org.signal.Signal
     - com.github.tchx84.Flatseal
     - com.github.Matoking.protontricks
     - com.obsproject.Studio
