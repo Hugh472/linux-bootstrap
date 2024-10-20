@@ -98,3 +98,8 @@
 - name: Grant VSCodium access to the host filesystem
   ansible.builtin.command:
     cmd: flatpak override --user --filesystem=host com.vscodium.codium
+
+- name: Signal - Do not use plaintext password list
+  ansible.builtin.command:
+    cmd: flatpak override --env=SIGNAL_PASSWORD_STORE=gnome-libsecret org.signal.Signal
+  become: true
