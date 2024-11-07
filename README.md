@@ -7,11 +7,11 @@ When complete, this repo will generate a complete setup for a user to browse the
 
 ## Usage
 
-curl -s https://raw.githubusercontent.com/Hugh472/linux-bootstrap/main/setup.sh | bash
+curl -s https://raw.githubusercontent.com/Hugh472/linux-bootstrap/main/bootstrap.sh | bash
 
 or
 
-wget -qO- https://raw.githubusercontent.com/Hugh472/linux-bootstrap/main/setup.sh | bash
+wget -qO- https://raw.githubusercontent.com/Hugh472/linux-bootstrap/main/bootstrap.sh | bash
 
 
 ## Roles (WIP)
