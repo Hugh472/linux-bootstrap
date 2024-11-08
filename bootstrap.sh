@@ -69,3 +69,6 @@ export GITHUB_TOKEN
 
 # Run the Ansible playbook with extra variables
 ansible-playbook -c local setup.yml --extra-vars "github_user=${GITHUB_USERNAME} github_email=${GITHUB_EMAIL}"
+
+# refresh groups so docker works immediately
+sudo su $USER

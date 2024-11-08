@@ -74,6 +74,12 @@
         enabled: yes
       become: true
 
+    - name: Add user to the docker group
+      ansible.builtin.user:
+        name: "{{ lookup('env', 'USER') }}"
+        group: docker
+      become: true
+
 - name: Install kubectl
   block:
     - name: Install kubectl on Debian-based systems
