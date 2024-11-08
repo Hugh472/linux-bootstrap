@@ -32,36 +32,38 @@
   when: ansible_os_family == 'Archlinux'
   become: true
   
+
+- name: Fetch latest Tor Browser version from API
+  uri:
+    url: "https://aus1.torproject.org/torbrowser/update_3/release/downloads.json"
+    method: GET
+    return_content: yes
+  register: tor_browser_response
+
+- name: Parse latest version from JSON response
+  set_fact:
+    latest_tor_version: "{{ tor_browser_response.json | json_query('version') }}"
+
+- name: Display the latest Tor Browser version
+  debug:
+    msg: "The latest Tor Browser version is: {{ latest_tor_version }}"
+
 - name: Download Tor Browser tarball
   become: true
   get_url:
-    url: https://www.torproject.org/dist/torbrowser/13.5.7/tor-browser-linux-x86_64-13.5.7.tar.xz
-    dest: /tmp/tor-browser-linux-x86_64.tar.xz
+    url: "https://www.torproject.org/dist/torbrowser/{{ latest_tor_version }}/tor-browser-linux-x86_64-{{ latest_tor_version }}.tar.xz"
+    dest: "/home/{{ lookup('env', 'USER') }}/Downloads/tor-browser-linux-x86_64.tar.xz"
 
 - name: Extract Tor Browser
   become: true
   unarchive:
-    src: /tmp/tor-browser-linux-x86_64.tar.xz
-    dest: /opt/
+    src: "/home/{{ lookup('env', 'USER') }}/Downloads/tor-browser-linux-x86_64.tar.xz"
+    dest: "/home/{{ lookup('env', 'USER') }}/.tor-browser"
     remote_src: yes
-
-# - name: Create symbolic link for Tor Browser
-#   become: true
-#   file:
-#     src: /opt/tor-browser/start-tor-browser.desktop
-#     dest: /usr/local/bin/tor-browser
-#     state: link
+    mode: '0770'
+    owner: "{{ lookup('env', 'USER') }}"
 
 - name: Create desktop entry for Tor Browser
-  become: true
-  copy:
-    dest: /usr/share/applications/tor-browser.desktop
-    content: |
-      [Desktop Entry]
-      Name=Tor Browser
-      Exec=/opt/tor-browser/start-tor-browser.desktop
-      Icon=/opt/tor-browser/Browser/browser/chrome/icons/default/default128.png
-      Type=Application
-      Categories=Network;WebBrowser;
-      Comment=Browse the web anonymously with Tor Browser
-      Terminal=false
+  ansible.builtin.command: ./start-tor-browser.desktop --register-app
+  args:
+    chdir: /home/{{ lookup('env', 'USER') }}/.tor-browser/tor-browser
