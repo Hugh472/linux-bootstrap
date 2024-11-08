@@ -1,0 +1,100 @@
+---
+# Detect OS family
+- name: Detect OS family
+  ansible.builtin.set_fact:
+    is_debian: "{{ ansible_os_family == 'Debian' }}"
+    is_fedora: "{{ ansible_os_family == 'RedHat' }}"
+    is_arch: "{{ ansible_os_family == 'Archlinux' }}"
+
+# Tailscale installation
+- name: Add Tailscale GPG key for Fedora
+  ansible.builtin.rpm_key:
+    key: https://pkgs.tailscale.com/stable/fedora/repo.gpg
+    state: present
+  when: is_fedora
+  become: true
+
+- name: Install Tailscale on Fedora
+  ansible.builtin.yum:
+    name: tailscale
+    state: present
+  when: is_fedora
+  become: true
+
+- name: Add Tailscale repository for Debian
+  ansible.builtin.command: |
+    curl -fsSL https://pkgs.tailscale.com/stable/debian/$(lsb_release -c -s).gpg | sudo tee /usr/share/keyrings/tailscale-archive-keyring.gpg
+    curl -fsSL https://pkgs.tailscale.com/stable/debian/$(lsb_release -c -s).list | sudo tee /etc/apt/sources.list.d/tailscale.list
+  when: is_debian
+  become: true
+
+- name: Install Tailscale on Debian
+  ansible.builtin.apt:
+    name: tailscale
+    state: present
+    update_cache: yes
+  when: is_debian
+  become: true
+
+- name: Install Tailscale on EndeavourOS (Arch)
+  ansible.builtin.command:
+    cmd: yay -S --noconfirm tailscale
+  when: is_arch
+  become: true
+
+- name: Start and enable Tailscale
+  ansible.builtin.systemd:
+    name: tailscaled
+    enabled: yes
+    state: started
+  become: true
+
+# Proton VPN installation
+- name: Add Proton VPN GPG key for Fedora
+  ansible.builtin.rpm_key:
+    key: https://repo.protonvpn.com/fedora-40-stable/public_key.asc
+    state: present
+  when: is_fedora
+  become: true
+
+- name: Add Proton VPN repo and install package on Fedora
+  ansible.builtin.yum:
+    name: "https://protonvpn.com/download/protonvpn-stable-release-1.0.1-1.noarch.rpm"
+    state: present
+  when: is_fedora
+  become: true
+
+- name: Install Proton VPN on Fedora
+  ansible.builtin.yum:
+    name: proton-vpn-gnome-desktop
+    state: present
+  when: is_fedora
+  become: true
+
+- name: Add Proton VPN GPG key for Debian
+  ansible.builtin.apt_key:
+    url: https://repo.protonvpn.com/debian/public_key.asc
+    state: present
+  when: is_debian
+  become: true
+
+- name: Add Proton VPN repository for Debian
+  ansible.builtin.template:
+    src: protonvpn_repo.j2
+    dest: /etc/apt/sources.list.d/protonvpn.list
+  when: is_debian
+  become: true
+
+- name: Install Proton VPN on Debian
+  ansible.builtin.apt:
+    name: protonvpn-gnome-desktop
+    state: present
+    update_cache: yes
+  when: is_debian
+  become: true
+
+- name: Install Proton VPN on EndeavourOS (Arch)
+  ansible.builtin.command:
+    cmd: yay -S --noconfirm proton-vpn-gtk-app
+  when: is_arch
+  become: true

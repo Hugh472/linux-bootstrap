@@ -20,6 +20,9 @@
       - hdparm
       - steam
       - jq
+      - libappindicator-gtk3 
+      - gnome-shell-extension-appindicator 
+      - gnome-extensions-app
     debian_packages:
       - lshw
       - nvme-cli
@@ -35,6 +38,9 @@
       - hdparm
       - steam
       - jq
+      - libappindicator-gtk3 
+      - gnome-shell-extension-appindicator 
+      - gnome-extensions-app
     endeavoros_packages:
       - lshw
       - nvme-cli
@@ -55,6 +61,7 @@
   roles:
     - common
     - storage
+    - networking
     - gpu
     - flatpak
     - zsh

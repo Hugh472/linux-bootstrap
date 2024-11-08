@@ -3,8 +3,10 @@
 # Install necessary dependencies
 if [[ "$(command -v apt)" ]]; then
     sudo apt update
+    sudo apt upgrade -y
     sudo apt install -y git ansible
 elif [[ "$(command -v dnf)" ]]; then
+    sudo dnf upgrade -y
     sudo dnf install -y git ansible
     sudo dnf install https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm
     sudo dnf install https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm
@@ -72,3 +74,6 @@ ansible-playbook -c local setup.yml --extra-vars "github_user=${GITHUB_USERNAME}
 
 # refresh groups so docker works immediately
 sudo su $USER
+
+# tailscale auth
+tailscale up
