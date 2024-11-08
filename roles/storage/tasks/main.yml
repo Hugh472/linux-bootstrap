@@ -1,32 +1,32 @@
 ---
-- name: Detect all storage devices
-  command: lsblk -o NAME,TYPE,FSTYPE,SIZE,MOUNTPOINT -J
-  register: lsblk_output
+  - name: Ensure genfstab is installed
+    ansible.builtin.package:
+      name: arch-install-scripts
+      state: present
+    become: true
 
-- name: Parse storage devices
-  set_fact:
-    devices: "{{ lsblk_output.stdout | from_json | json_query('blockdevices[?type==`disk` || type==`part` || type==`lvm` || type==`crypt`].{name: name, fstype: fstype, mountpoint: mountpoint, size: size}') }}"
+  - name: Backup existing fstab
+    ansible.builtin.copy:
+      src: /etc/fstab
+      dest: /etc/fstab.bak
+      backup: yes
+    become: true
 
-- name: Generate fstab entries
-  set_fact:
-    fstab_entries: >-
-      {{ devices | selectattr('mountpoint', 'defined') | map('regex_replace', '^', 'UUID=') | join('\n') }}
+  - name: Generate a new fstab with genfstab
+    ansible.builtin.command: genfstab -U /
+    register: genfstab_output
+    become: true
 
-- name: Ensure backup of fstab
-  copy:
-    src: /etc/fstab
-    dest: /etc/fstab.bak
-    backup: yes
-  become: true
+  - name: Append new fstab entries to /etc/fstab
+    ansible.builtin.lineinfile:
+      path: /etc/fstab
+      line: "{{ item }}"
+      state: present
+      insertafter: EOF
+    loop: "{{ genfstab_output.stdout_lines }}"
+    become: true
 
-- name: Add storage devices to fstab
-  blockinfile:
-    path: /etc/fstab
-    marker: "# {mark} ANSIBLE MANAGED BLOCK - STORAGE DEVICES"
-    block: |
-      {{ fstab_entries }}
-  become: true
-
-- name: Mount all filesystems
-  command: mount -a
-  become: true
+  - name: Test the new fstab configuration by mounting all entries
+    ansible.builtin.command: mount -a
+    ignore_errors: true
+    become: true
