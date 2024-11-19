@@ -28,5 +28,5 @@
 
   - name: Test the new fstab configuration by mounting all entries
     ansible.builtin.command: mount -a
-    ignore_errors: true
+    ignore_errors: false
     become: true
