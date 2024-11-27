@@ -1,15 +1,15 @@
 ---
 - name: Install and configure Flatpak
-  package:
+  ansible.builtin.package:
     name: flatpak
     state: present
   become: true
 
 - name: Add Flathub repository
-  command: flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+  ansible.builtin.command: flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
 
 - name: Remove native versions of applications
-  package:
+  ansible.builtin.package:
     name: "{{ item }}"
     state: absent
   loop:
@@ -60,7 +60,7 @@
 #     creates: ~/.config/calibre/plugins/DeDRM_plugin.zip
 
 - name: Create symlink for codium CLI
-  file:
+  ansible.builtin.file:
     src: /var/lib/flatpak/exports/bin/com.vscodium.codium
     dest: /usr/local/bin/codium
     state: link
@@ -68,14 +68,14 @@
   become: true
 
 - name: Ensure codium CLI is executable
-  file:
+  ansible.builtin.file:
     path: /usr/local/bin/codium
     mode: '0755'
     state: file
   become: true
 
 - name: Verify codium command works
-  command: codium --version
+  ansible.builtin.command: codium --version
   register: result
   changed_when: False
   failed_when: result.rc != 0
@@ -94,6 +94,11 @@
 - name: Grant WezTerm access to the host filesystem
   ansible.builtin.command:
     cmd: flatpak override --user --filesystem=host org.wezfurlong.WezTerm
+
+- name: Add WezTerm Config file to home directory
+  ansible.builtin.file:
+    src: .wezterm.lua
+    dest: "/home/{{ username }}/.wezterm.lua"
 
 - name: Grant VSCodium access to the host filesystem
   ansible.builtin.command:
