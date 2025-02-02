@@ -1,0 +1,30 @@
+- name: Install NVIDIA drivers on Debian
+  apt:
+    name: "{{ item }}"
+    state: present
+  loop:
+    - nvidia-driver
+    - nvidia-settings
+    - vulkan-utils
+    - nvidia-cuda-toolkit
+  when: gpu_vendor == 'nvidia'
+  become: true
+
+- name: Install AMD drivers on Debian
+  apt:
+    name: "{{ item }}"
+    state: present
+  loop:
+    - mesa-vulkan-drivers
+    - vulkan-utils
+  when: gpu_vendor == 'amd'
+  become: true
+
+- name: Configure Debian-specific Nouveau blacklist
+  ansible.builtin.lineinfile:
+    path: /etc/default/grub
+    regexp: '^GRUB_CMDLINE_LINUX_DEFAULT="'
+    line: 'GRUB_CMDLINE_LINUX_DEFAULT="$GRUB_CMDLINE_LINUX_DEFAULT nouveau.modeset=0"'
+  when: gpu_vendor == 'nvidia'
+  notify: Update GRUB
+  become: true

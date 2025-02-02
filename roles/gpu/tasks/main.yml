@@ -1,81 +1,31 @@
 ---
-- name: Detect GPU type
-  shell: lshw -C display | grep vendor | awk '{print $2}'
-  register: gpu_vendor
-  become: true
+- name: Detect GPU hardware
+  ansible.builtin.command: lspci | grep -E "VGA|3D"
+  register: gpu_info
+  changed_when: false
 
-- name: Install NVIDIA drivers on Debian
-  apt:
-    name: "{{ item }}"
-    state: present
-  loop:
-    - nvidia-driver
-    - nvidia-settings
-    - vulkan-utils
-    - nvidia-cuda-toolkit
-  when: gpu_vendor.stdout.find('NVIDIA') != -1 and os_id.stdout.find('debian') != -1
-  become: true
+- name: Set GPU vendor fact
+  ansible.builtin.set_fact:
+    gpu_vendor: "{{ 'nvidia' if 'NVIDIA' in gpu_info.stdout else 'amd' if 'AMD' in gpu_info.stdout else 'unknown' }}"
 
-- name: Install NVIDIA drivers on Fedora
-  dnf:
-    name: "{{ item }}"
-    state: present
-  loop:
-    - akmod-nvidia
-    - xorg-x11-drv-nvidia
-    - xorg-x11-drv-nvidia-libs
-    - xorg-x11-drv-nvidia-cuda
-    - vulkan
-    - vulkan-tools
-    - vulkan-loader
-  when: gpu_vendor.stdout.find('NVIDIA') != -1 and os_id.stdout.find('fedora') != -1
-  become: true
+- name: Set Up distribution-specific GPU Configurations 
+  ansible.builtin.include_tasks: "{{ ansible_distribution | lower }}.yml"
 
-- name: Install NVIDIA drivers on EndeavourOS
-  pacman:
-    name: "{{ item }}"
-    state: present
-  loop:
-    - nvidia
-    - nvidia-utils
-    - lib32-nvidia-utils
-    - vulkan-icd-loader
-    - lib32-vulkan-icd-loader
-    - vulkan-tools
-    - nvidia-libgl
-    - lib32-nvidia-libgl
-  when: gpu_vendor.stdout.find('NVIDIA') != -1 and os_id.stdout.find('endeavouros') != -1
-  become: true
+# - name: Blacklist Nouveau driver
+#   community.general.kernel_blacklist:
+#     name: nouveau
+#     state: present
+#   notify: Update initramfs
 
-- name: Install AMD drivers on Debian
-  apt:
-    name: "{{ item }}"
-    state: present
-  loop:
-    - mesa-vulkan-drivers
-    - vulkan-utils
-  when: gpu_vendor.stdout.find('AMD') != -1 and os_id.stdout.find('debian') != -1
-  become: true
+# - name: Create modprobe config file
+#   ansible.builtin.copy:
+#     content: "options nouveau modeset=0"
+#     dest: /etc/modprobe.d/nouveau-kms.conf
 
-- name: Install AMD drivers on Fedora
-  dnf:
-    name: "{{ item }}"
-    state: present
-  loop:
-    - xorg-x11-drv-amdgpu
-    - vulkan
-  when: gpu_vendor.stdout.find('AMD') != -1 and os_id.stdout.find('fedora') != -1
-  become: true
-
-- name: Install AMD drivers on EndeavourOS
-  pacman:
-    name: "{{ item }}"
-    state: present
-  loop:
-    - xf86-video-amdgpu
-    - vulkan-radeon
-  when: gpu_vendor.stdout.find('AMD') != -1 and os_id.stdout.find('endeavouros') != -1
-  become: true
+# - name: Ensure GRUB is updated
+#   ansible.builtin.command: "{{ grub_update_cmd }}"
+#   when: grub_update_cmd is defined
+#   changed_when: true
 
 - name: Test Vulkan installation
   shell: vulkaninfo

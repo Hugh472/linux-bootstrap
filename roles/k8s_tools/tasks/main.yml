@@ -118,6 +118,7 @@
 - name: Install k3sup
   become: true
   copy:
+    remote_src: true
     src: ./k3sup
     dest: /usr/local/bin/k3sup
 

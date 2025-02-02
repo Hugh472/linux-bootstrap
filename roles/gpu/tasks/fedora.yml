@@ -1,0 +1,33 @@
+- name: Install NVIDIA drivers on Fedora
+  dnf:
+    name: "{{ item }}"
+    state: present
+  loop:
+    - akmod-nvidia
+    - xorg-x11-drv-nvidia
+    - xorg-x11-drv-nvidia-libs
+    - xorg-x11-drv-nvidia-cuda
+    - vulkan
+    - vulkan-tools
+    - vulkan-loader
+  when: gpu_vendor == 'nvidia'
+  become: true
+
+- name: Install AMD drivers on Fedora
+  dnf:
+    name: "{{ item }}"
+    state: present
+  loop:
+    - xorg-x11-drv-amdgpu
+    - vulkan
+  when: gpu_vendor == 'amd'
+  become: true
+
+
+- name: Add kernel parameters to GRUB for Fedora
+  ansible.builtin.lineinfile:
+    path: /etc/default/grub
+    regexp: '^GRUB_CMDLINE_LINUX="'
+    line: 'GRUB_CMDLINE_LINUX="$GRUB_CMDLINE_LINUX rd.driver.blacklist=nouveau modprobe.blacklist=nouveau nvidia-drm.modeset=1"'
+  when: gpu_vendor == 'nvidia'
+  notify: Update GRUB

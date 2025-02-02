@@ -1,0 +1,11 @@
+- name: Update initramfs
+  ansible.builtin.command: update-initramfs -u
+  when: ansible_distribution == 'Debian'
+
+- name: Update GRUB
+  ansible.builtin.command: "{{ grub_update_cmd }}"
+  when: grub_update_cmd is defined
+
+- name: Reinstall kernels
+  ansible.builtin.command: reinstall-kernels
+  when: ansible_distribution == 'EndeavourOS'

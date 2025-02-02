@@ -1,0 +1,6 @@
+grub_update_cmd: "{{ lookup('dict', grub_update_cmds)[ansible_distribution] | default(omit) }}"
+
+grub_update_cmds:
+  Fedora: "grub2-mkconfig -o /boot/grub2/grub.cfg"
+  Debian: "update-grub"
+  EndeavourOS: "grub-mkconfig -o /boot/grub/grub.cfg"
