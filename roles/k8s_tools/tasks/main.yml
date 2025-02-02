@@ -58,7 +58,7 @@
       when: ansible_os_family == 'RedHat'
       become: true
       
-    - name: Install kubectl on Arch-based systems
+    - name: Install Docker on Arch-based systems
       package:
         name: 
         - docker
