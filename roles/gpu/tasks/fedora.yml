@@ -1,0 +1,47 @@
+- name: Install NVIDIA drivers on Fedora
+  dnf:
+    name: "{{ item }}"
+    state: present
+  loop:
+    - akmod-nvidia
+    - xorg-x11-drv-nvidia
+    - xorg-x11-drv-nvidia-libs
+    - xorg-x11-drv-nvidia-cuda
+    - xorg-x11-drv-nvidia-power
+    - vulkan
+    - vulkan-tools
+    - vulkan-loader
+  when: gpu_vendor == 'nvidia'
+  become: true
+
+- name: enable nvidia-power services
+  ansible.builtin.systemd_service:
+    name: "{{ item }}"
+    enabled: true
+  loop:
+    - nvidia-suspend
+    - nvidia-resume
+    - nvidia-hibernate
+
+- name: Mark nvidia driver safe
+  ansible.builtin.shell: dnf mark user akmod-nvidia
+  become: true
+
+- name: Add kernel parameters to GRUB for Fedora
+  ansible.builtin.shell: grubby --update-kernel=ALL --args="rd.driver.blacklist=nouveau modprobe.blacklist=nouveau nvidia-drm.modeset=1"
+  when: gpu_vendor == 'nvidia'
+  notify: Update GRUB
+  become: true
+
+
+- name: Install AMD drivers on Fedora
+  dnf:
+    name: "{{ item }}"
+    state: present
+  loop:
+    - xorg-x11-drv-amdgpu
+    - vulkan
+    - vulkan-tools
+    - vulkan-loader
+  when: gpu_vendor == 'amd'
+  become: true

@@ -59,17 +59,17 @@
       - python-jmespath
       - jq
   roles:
-    - common
-    - storage
+    # - common
+    # - storage
     - networking
-    - gpu
-    - flatpak
-    - zsh
+    # - gpu
+    # - flatpak
+    # - zsh
     - git
-    - dev_tools
-    - k8s_tools
-    - torrenting 
-    - emulators
+    # - dev_tools
+    #- k8s_tools
+    # - torrenting 
+    # - emulators
     #- wayland
     #- hyprland    
     #- wakeonlan

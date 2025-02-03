@@ -58,7 +58,7 @@
       when: ansible_os_family == 'RedHat'
       become: true
       
-    - name: Install kubectl on Arch-based systems
+    - name: Install Docker on Arch-based systems
       package:
         name: 
         - docker
@@ -118,6 +118,7 @@
 - name: Install k3sup
   become: true
   copy:
+    remote_src: true
     src: ./k3sup
     dest: /usr/local/bin/k3sup
 

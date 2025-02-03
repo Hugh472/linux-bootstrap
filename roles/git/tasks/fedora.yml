@@ -1,0 +1,14 @@
+- name: Enable lazygit
+  ansible.builtin.command:
+    cmd: dnf copr enable atim/lazygit -y
+  become: true
+
+- name: Install packages on Fedora
+  ansible.builtin.dnf:
+    name:
+      - git
+      - gh
+      - lazygit
+      - openssh
+    state: present
+  become: true  

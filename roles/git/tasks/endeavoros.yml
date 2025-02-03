@@ -1,0 +1,11 @@
+- name: Install packages on EndeavourOS
+  ansible.builtin.pacman:
+    name:
+      - git
+      - github-cli
+      - lazygit
+      - openssh
+    state: present
+    update_cache: yes
+  when: os_id.stdout.find('endeavouros') != -1
+  become: true
