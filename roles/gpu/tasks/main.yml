@@ -8,6 +8,14 @@
   ansible.builtin.set_fact:
     gpu_vendor: "{{ 'nvidia' if 'NVIDIA' in gpu_info.stdout else 'amd' if 'AMD' in gpu_info.stdout else 'unknown' }}"
 
+- name: debug
+  debug:
+    msg: "{{ kepler }}"
+
+- name: Set GPU Hardware Series Fact
+  ansible.builtin.set_fact:
+    kepler: "{{ kepler }}"
+
 - name: Set Up distribution-specific GPU Configurations 
   ansible.builtin.include_tasks: "{{ ansible_distribution | lower }}.yml"
 

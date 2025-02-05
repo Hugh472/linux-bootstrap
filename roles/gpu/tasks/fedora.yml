@@ -1,3 +1,22 @@
+- name: Install Legacy NVIDIA drivers on Fedora
+  dnf:
+    name: "{{ item }}"
+    state: present
+  loop:
+    - akmod-nvidia-470xx
+    - xorg-x11-drv-nvidia-470xx
+    #TODO: Does this work
+    #- xorg-x11-drv-nvidia-libs
+    - xorg-x11-drv-nvidia-470xx-cuda
+    # TODO: Does this work
+    #- xorg-x11-drv-nvidia-power
+    - vulkan
+    - vulkan-tools
+    - vulkan-loader
+  when: gpu_vendor == 'nvidia' and kepler == 'true'
+  become: true
+
+
 - name: Install NVIDIA drivers on Fedora
   dnf:
     name: "{{ item }}"
@@ -11,7 +30,7 @@
     - vulkan
     - vulkan-tools
     - vulkan-loader
-  when: gpu_vendor == 'nvidia'
+  when: gpu_vendor == 'nvidia' and kepler == 'false'
   become: true
 
 - name: enable nvidia-power services
@@ -22,15 +41,17 @@
     - nvidia-suspend
     - nvidia-resume
     - nvidia-hibernate
+  when: gpu_vendor == 'nvidia' and kepler == 'false'
+  become: true
 
 - name: Mark nvidia driver safe
   ansible.builtin.shell: dnf mark user akmod-nvidia
+  when: gpu_vendor == 'nvidia' and kepler == 'false'
   become: true
 
 - name: Add kernel parameters to GRUB for Fedora
   ansible.builtin.shell: grubby --update-kernel=ALL --args="rd.driver.blacklist=nouveau modprobe.blacklist=nouveau nvidia-drm.modeset=1"
   when: gpu_vendor == 'nvidia'
-  notify: Update GRUB
   become: true
 
 
