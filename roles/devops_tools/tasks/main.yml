@@ -1,0 +1,45 @@
+---
+- name: Clone tfenv repository
+  git:
+    repo: https://github.com/tfutils/tfenv.git
+    dest: "{{ ansible_env.HOME }}/.tfenv"
+    depth: 1
+
+- name: Clone tgenv repository
+  git:
+    repo: https://github.com/cunymatthieu/tgenv.git
+    dest: "{{ ansible_env.HOME }}/.tgenv"
+
+- name: Clone tofuenv repository
+  git:
+    repo: https://github.com/tofuutils/tofuenv.git 
+    dest: "{{ ansible_env.HOME }}/.tofuenv"
+
+- name: Add tfenv and tgenv to PATH in .zshrc
+  lineinfile:
+    path: "{{ ansible_env.HOME }}/.zshrc"
+    line: "{{ item }}"
+  loop:
+    - 'export PATH="$HOME/.tfenv/bin:$PATH"'
+    - 'export PATH="$HOME/.tgenv/bin:$PATH"'
+    - 'export PATH="$HOME/.tofuenv/bin:$PATH"'
+
+- name: Download AWS CLI installer
+  get_url:
+    url: "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip"
+    dest: "/tmp/awscliv2.zip"
+
+- name: Extract AWS CLI installer
+  unarchive:
+    src: "/tmp/awscliv2.zip"
+    dest: "/tmp"
+    remote_src: yes
+
+- name: Install AWS CLI
+  command: "/tmp/aws/install"
+  args:
+    creates: "/usr/local/bin/aws"
+  become: true
+
+
+

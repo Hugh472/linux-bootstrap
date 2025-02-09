@@ -96,7 +96,7 @@
     cmd: flatpak override --user --filesystem=host org.wezfurlong.WezTerm
 
 - name: Add WezTerm Config file to home directory
-  ansible.builtin.file:
+  ansible.builtin.copy:
     src: .wezterm.lua
     dest: "/home/{{ username }}/.wezterm.lua"
 

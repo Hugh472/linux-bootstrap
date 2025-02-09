@@ -70,7 +70,7 @@ read -p 'Enter your GitHub email: ' GITHUB_EMAIL
 export GITHUB_TOKEN
 
 # Run the Ansible playbook with extra variables
-ansible-playbook -c local setup.yml --extra-vars "github_user=${GITHUB_USERNAME} github_email=${GITHUB_EMAIL}"
+ansible-playbook -c local setup.yml --extra-vars "github_user=${GITHUB_USERNAME} github_email=${GITHUB_EMAIL} kepler=${KEPLER}"
 
 # refresh groups so docker works immediately
 sudo su $USER
